@@ -3,6 +3,7 @@
 import pyautogui as pag
 import time
 import os
+import psutil
 import pygetwindow as gw
 
 def close_original_excel_window():
@@ -27,6 +28,21 @@ def automate_excel_task():
     # Open Excel
     os.startfile("C:\\ProgramData\\Microsoft\\Windows\\Start Menu\\Programs\\Excel.lnk")  # Replace with your Excel shortcut path
     time.sleep(5)  # Wait for Excel to open
+
+    # Make sure that Excel is the active window
+    excel_windows = [w for w in gw.getAllWindows() if "Excel" in w.title]
+    while not excel_windows:
+        time.sleep(1)
+        excel_windows = [w for w in gw.getAllWindows() if "Excel" in w.title]
+
+    if excel_windows[0].isMinimized:
+        excel_windows[0].restore()
+        print(f"Restored: {excel_windows[0].title}")
+
+    active_window = gw.getActiveWindow()
+    if "Excel" not in active_window.title:
+        excel_windows[0].activate()
+        print(f"Activated: {excel_windows[0].title}")
 
     # Open a blank workbook
     pag.hotkey('enter')
@@ -67,10 +83,32 @@ def automate_excel_task():
     pag.hotkey('tab')
     pag.hotkey('enter')
 
+
+    #TODO: possibly find the best time to close the unnecessary excel window by cpu usage since UPush takes a minute to load
+    process_name = "upush_template_physicalasset2013 - Excel"
+    process = get_process_by_window_title(process_name)
+    if process:
+        process_name = process.name()
+        print(f"Process found: {process_name}")
+    
+    return
+
     # Close the original Excel window
     #close_original_excel_window()
 
     print("Task completed!")
+
+
+
+
+def get_process_by_window_title(title):
+    for proc in psutil.process_iter(['pid', 'name']):
+        try:
+            if title in proc.name():  # Match process name
+                return proc
+        except (psutil.NoSuchProcess, psutil.AccessDenied):
+            continue
+    return None
 
 if __name__ == "__main__":
     automate_excel_task()
