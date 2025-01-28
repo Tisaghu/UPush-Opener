@@ -26,10 +26,18 @@ def close_original_excel_window():
 
 def automate_excel_task():
     # Open Excel
+    print("Opening Excel...")
     os.startfile("C:\\ProgramData\\Microsoft\\Windows\\Start Menu\\Programs\\Excel.lnk")  # Replace with your Excel shortcut path
     time.sleep(5)  # Wait for Excel to open
 
+    # Make sure that excel is open
+    excel_windows = [w for w in gw.getAllWindows() if "Excel" in w.title]
+    while not excel_windows:
+        time.sleep(1)
+        excel_windows = [w for w in gw.getAllWindows() if "Excel" in w.title]
+
     # Make sure that Excel is the active window
+    print("Activating Excel...")
     excel_windows = [w for w in gw.getAllWindows() if "Excel" in w.title]
     while not excel_windows:
         time.sleep(1)
@@ -45,12 +53,15 @@ def automate_excel_task():
         print(f"Activated: {excel_windows[0].title}")
 
     # Open a blank workbook
+    print("Opening a blank workbook...")
     pag.hotkey('enter')
 
     # Navigate to the Plug-ins tab
+    print("Navigating to the Plug-ins tab...")
     pag.hotkey('alt', 'x')  
 
     # Click on the UPush button
+    print("Clicking on the UPush button...")
     pag.hotkey('y','1')
     #pag.hotkey('1')
 
@@ -107,6 +118,7 @@ def get_process_by_window_title(title):
             if title in proc.name():  # Match process name
                 return proc
         except (psutil.NoSuchProcess, psutil.AccessDenied):
+            print("Could not access process")
             continue
     return None
 
